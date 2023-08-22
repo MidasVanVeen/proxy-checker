@@ -91,7 +91,6 @@ func (c *Checker) CleanList(proxies []string, uas *[]string, refs *[]string) []s
 		wg.Add(1)
 		go func(proxy string) {
 			defer wg.Done()
-			print("checking " + proxy + "\n")
 			if c.Check(proxy, (*uas)[rand.Intn(len(*uas))], (*refs)[rand.Intn(len(*refs))]) {
 				cleanChannel <- proxy
 			}
@@ -103,7 +102,6 @@ func (c *Checker) CleanList(proxies []string, uas *[]string, refs *[]string) []s
 	}()
 	for p := range cleanChannel {
 		cleanProxies = append(cleanProxies, p)
-		println("Proxy: " + p)
 	}
 	return cleanProxies
 }
