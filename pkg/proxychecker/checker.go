@@ -83,7 +83,7 @@ func (c *Checker) Check(proxy string, ua string, ref string) bool {
 	return false
 }
 
-func (c *Checker) CleanList(proxies []string, uas *[]string, refs *[]string) []string {
+func (c *Checker) CleanList(proxies []string, uas *[]string, refs *[]string, validCallback func(proxy string)) []string {
 	var wg sync.WaitGroup
 	var cleanProxies []string
 	cleanChannel := make(chan string)
@@ -93,6 +93,7 @@ func (c *Checker) CleanList(proxies []string, uas *[]string, refs *[]string) []s
 			defer wg.Done()
 			if c.Check(proxy, (*uas)[rand.Intn(len(*uas))], (*refs)[rand.Intn(len(*refs))]) {
 				cleanChannel <- proxy
+				validCallback(proxy)
 			}
 		}(proxy)
 	}
