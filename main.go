@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/MidasVanVeen/proxy-checker/pkg/proxychecker"
@@ -40,11 +41,11 @@ func readFile(filename string) []string {
 }
 
 func main() {
-	checker, err := proxychecker.NewChecker(proxyutils.HTTP, 5*time.Second, 3)
+	checker, err := proxychecker.NewChecker(proxyutils.SOCKS5, 3*time.Second, 3)
 	if err != nil {
 		panic(err)
 	}
 	proxies := readFile("proxies.txt")
-	checked := checker.CleanList(proxies, &uas, &refs)
-	print(checked[0])
+	cleanproxies := checker.CleanList(proxies, &uas, &refs)
+	println("Checked " + strconv.Itoa(len(proxies)) + " proxies. " + strconv.Itoa(len(cleanproxies)) + " are working.")
 }

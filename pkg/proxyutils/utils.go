@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"h12.io/socks"
 )
 
 type Protocol string
@@ -17,13 +18,23 @@ const (
 )
 
 func ConfigureTransport(protocol Protocol, proxy string) (*http.Transport, error) {
-	proxyUrl, err := url.Parse(string(protocol) + "://" + proxy)
-	if err != nil {
-		return nil, err
+	switch protocol {
+	case HTTP, HTTPS:
+		proxyUrl, err := url.Parse(string(protocol) + "://" + proxy)
+		if err != nil {
+			return nil, err
+		}
+		return &http.Transport{
+			Proxy: http.ProxyURL(proxyUrl),
+		}, nil
+	case SOCKS4, SOCKS5:
+		dialSocksProxy := socks.Dial(string(protocol) + "://" + proxy)
+		return &http.Transport{
+			Dial: dialSocksProxy,
+		}, nil
+	default:
+		return nil, nil
 	}
-	return &http.Transport{
-		Proxy: http.ProxyURL(proxyUrl),
-	}, nil
 }
 
 // TODO: replace all this with regex

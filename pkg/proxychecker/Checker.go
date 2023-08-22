@@ -40,6 +40,7 @@ func (c *Checker) Check(proxy string, ua string, ref string) bool {
 	retries := 0
 	transport, err := proxyutils.ConfigureTransport(c.protocol, proxy)
 	if err != nil {
+		println("error: " + err.Error())
 		return false
 	}
 	client := &http.Client{
@@ -77,6 +78,7 @@ func (c *Checker) Check(proxy string, ua string, ref string) bool {
 		if jsonResp.Origin == strings.Split(proxy, ":")[0] {
 			return true
 		}
+		retries++
 	}
 	return false
 }
@@ -87,17 +89,13 @@ func (c *Checker) CleanList(proxies []string, uas *[]string, refs *[]string) []s
 	cleanChannel := make(chan string)
 	for _, proxy := range proxies {
 		wg.Add(1)
-		go func() {
-			if !proxyutils.ValidateProxy(proxy) || proxy == "" {
-				wg.Done()
-				return
-			}
+		go func(proxy string) {
+			defer wg.Done()
 			print("checking " + proxy + "\n")
 			if c.Check(proxy, (*uas)[rand.Intn(len(*uas))], (*refs)[rand.Intn(len(*refs))]) {
 				cleanChannel <- proxy
 			}
-			wg.Done()
-		}()
+		}(proxy)
 	}
 	go func() {
 		wg.Wait()
